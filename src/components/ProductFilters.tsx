@@ -1,7 +1,7 @@
 'use client';
 
 import { useRouter, useSearchParams, usePathname } from 'next/navigation';
-import type { Category, Gender, FrameShape } from '@/lib/types';
+import type { Gender, FrameShape } from '@/lib/types';
 
 const genderOptions: { value: Gender; label: string }[] = [
   { value: 'men', label: 'Men' },

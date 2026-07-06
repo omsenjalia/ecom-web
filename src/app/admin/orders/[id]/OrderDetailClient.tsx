@@ -184,7 +184,7 @@ export default function OrderDetailClient({ order }: Props) {
               {items.map((item) => (
                 <div key={item.id as string} style={{ display: 'flex', gap: '0.75rem', padding: '0.75rem', background: '#f9fafb', borderRadius: 8 }}>
                   <div style={{ width: 56, height: 56, borderRadius: 6, overflow: 'hidden', flexShrink: 0, background: '#e5e7eb', position: 'relative' }}>
-                    {item.image_url_snapshot && (
+                    {(item.image_url_snapshot as string) && (
                       <Image src={item.image_url_snapshot as string} alt="" fill sizes="56px" style={{ objectFit: 'cover' }} />
                     )}
                   </div>
@@ -253,7 +253,7 @@ export default function OrderDetailClient({ order }: Props) {
                 <span className="admin-text-muted">Status</span>
                 <StatusBadge status={order.payment_status as string} />
               </div>
-              {order.razorpay_payment_id && (
+              {(order.razorpay_payment_id as string) && (
                 <div className="admin-flex-between">
                   <span className="admin-text-muted">Payment ID</span>
                   <span className="admin-text-sm" style={{ fontFamily: 'monospace' }}>{order.razorpay_payment_id as string}</span>
@@ -304,7 +304,7 @@ export default function OrderDetailClient({ order }: Props) {
         }
         confirmLabel={confirmAction?.label || 'Confirm'}
         confirmVariant="danger"
-        onConfirm={() => confirmAction && handleStatusUpdate(confirmAction.status)}
+        onConfirm={() => { if (confirmAction) handleStatusUpdate(confirmAction.status); }}
         onCancel={() => setConfirmAction(null)}
       />
     </div>

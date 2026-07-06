@@ -3,7 +3,7 @@ import type { Metadata } from 'next';
 import { createClient } from '@/lib/supabase/server';
 import ProductCard from '@/components/ProductCard';
 import ProductFilters from '@/components/ProductFilters';
-import type { Product, ProductImage, Category } from '@/lib/types';
+import type { Product, ProductImage, CategorySlug } from '@/lib/types';
 
 
 
@@ -41,7 +41,7 @@ export default async function CategoryPage({ params, searchParams }: CategoryPag
     );
   }
 
-  const products = await getCategoryProducts(category as Category, sp);
+  const products = await getCategoryProducts(category as CategorySlug, sp);
 
   return (
     <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 sm:py-12">
@@ -93,7 +93,7 @@ export default async function CategoryPage({ params, searchParams }: CategoryPag
 }
 
 async function getCategoryProducts(
-  category: Category,
+  category: CategorySlug,
   params: { gender?: string; shape?: string; price?: string }
 ): Promise<(Product & { images: ProductImage[] })[]> {
   try {
