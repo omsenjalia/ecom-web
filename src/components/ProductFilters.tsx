@@ -3,13 +3,6 @@
 import { useRouter, useSearchParams, usePathname } from 'next/navigation';
 import type { Category, Gender, FrameShape } from '@/lib/types';
 
-const categoryOptions: { value: Category; label: string }[] = [
-  { value: 'eyeglasses', label: 'Eyeglasses' },
-  { value: 'sunglasses', label: 'Sunglasses' },
-  { value: 'reading-glasses', label: 'Reading Glasses' },
-  { value: 'kids', label: 'Kids' },
-];
-
 const genderOptions: { value: Gender; label: string }[] = [
   { value: 'men', label: 'Men' },
   { value: 'women', label: 'Women' },
@@ -38,9 +31,10 @@ const priceRanges = [
 
 interface ProductFiltersProps {
   hideCategory?: boolean;
+  categories?: { slug: string; name: string }[];
 }
 
-export default function ProductFilters({ hideCategory }: ProductFiltersProps) {
+export default function ProductFilters({ hideCategory, categories = [] }: ProductFiltersProps) {
   const router = useRouter();
   const pathname = usePathname();
   const searchParams = useSearchParams();
@@ -75,17 +69,17 @@ export default function ProductFilters({ hideCategory }: ProductFiltersProps) {
             Category
           </h3>
           <div className="flex flex-wrap gap-2">
-            {categoryOptions.map((opt) => (
+            {categories.map((opt) => (
               <button
-                key={opt.value}
-                onClick={() => updateFilter('category', activeCategory === opt.value ? '' : opt.value)}
+                key={opt.slug}
+                onClick={() => updateFilter('category', activeCategory === opt.slug ? '' : opt.slug)}
                 className={`px-3 py-1.5 text-xs font-medium border transition-colors ${
-                  activeCategory === opt.value
+                  activeCategory === opt.slug
                     ? 'bg-charcoal text-cream border-charcoal'
                     : 'bg-white text-warm-gray-dark border-cream-dark hover:border-charcoal'
                 }`}
               >
-                {opt.label}
+                {opt.name}
               </button>
             ))}
           </div>

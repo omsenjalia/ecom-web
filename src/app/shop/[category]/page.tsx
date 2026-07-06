@@ -5,24 +5,7 @@ import ProductCard from '@/components/ProductCard';
 import ProductFilters from '@/components/ProductFilters';
 import type { Product, ProductImage, Category } from '@/lib/types';
 
-const categoryMeta: Record<string, { title: string; description: string }> = {
-  eyeglasses: {
-    title: 'Eyeglasses',
-    description: 'Premium optical frames for men, women, and unisex. Lightweight, stylish, and built to last.',
-  },
-  sunglasses: {
-    title: 'Sunglasses',
-    description: 'UV400 polarised sunglasses that protect your eyes and elevate your look.',
-  },
-  'reading-glasses': {
-    title: 'Reading Glasses',
-    description: 'Comfortable reading glasses available in multiple powers. Anti-glare coated lenses.',
-  },
-  kids: {
-    title: 'Kids Eyewear',
-    description: 'Durable, colourful frames designed for active kids. Flexible and virtually unbreakable.',
-  },
-};
+
 
 interface CategoryPageProps {
   params: Promise<{ category: string }>;
@@ -35,22 +18,25 @@ interface CategoryPageProps {
 
 export async function generateMetadata({ params }: CategoryPageProps): Promise<Metadata> {
   const { category } = await params;
-  const meta = categoryMeta[category];
+  const supabase = await createClient();
+  const { data } = await supabase.from('categories').select('name, description').eq('slug', category).single();
   return {
-    title: meta?.title || 'Shop',
-    description: meta?.description || 'Browse our collection.',
+    title: data?.name || 'Shop',
+    description: data?.description || 'Browse our collection.',
   };
 }
 
 export default async function CategoryPage({ params, searchParams }: CategoryPageProps) {
   const { category } = await params;
   const sp = await searchParams;
-  const meta = categoryMeta[category];
+  const supabase = await createClient();
+  const { data: catData } = await supabase.from('categories').select('*').eq('slug', category).single();
 
-  if (!meta) {
+  if (!catData) {
     return (
       <div className="text-center py-20">
         <h1 className="text-2xl font-display text-charcoal">Category not found</h1>
+        <p className="text-warm-gray mt-2">The category you are looking for does not exist.</p>
       </div>
     );
   }
@@ -61,8 +47,8 @@ export default async function CategoryPage({ params, searchParams }: CategoryPag
     <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 sm:py-12">
       {/* Page Header */}
       <div className="mb-8">
-        <h1 className="text-3xl sm:text-4xl font-display text-charcoal">{meta.title}</h1>
-        <p className="text-warm-gray mt-2 max-w-xl">{meta.description}</p>
+        <h1 className="text-3xl sm:text-4xl font-display text-charcoal">{catData.name}</h1>
+        <p className="text-warm-gray mt-2 max-w-xl">{catData.description}</p>
         <p className="text-sm text-warm-gray-dark mt-1">
           {products.length} {products.length === 1 ? 'frame' : 'frames'}
         </p>
@@ -114,9 +100,9 @@ async function getCategoryProducts(
     const supabase = await createClient();
     let query = supabase
       .from('products')
-      .select('*, images:product_images(*)')
+      .select('*, images:product_images(*), categories!inner(*)')
       .eq('is_active', true)
-      .eq('category', category)
+      .eq('categories.slug', category)
       .order('created_at', { ascending: false });
 
     if (params.gender) query = query.eq('gender', params.gender);

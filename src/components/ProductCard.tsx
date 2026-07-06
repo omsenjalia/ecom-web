@@ -44,7 +44,7 @@ export default function ProductCard({ product }: ProductCardProps) {
 
         {/* Category tag */}
         <span className="absolute bottom-3 left-3 bg-charcoal/80 text-cream text-[10px] uppercase tracking-wider px-2 py-1 backdrop-blur-sm">
-          {product.category.replace('-', ' ')}
+          {product.categories?.name || product.category?.replace('-', ' ') || 'Eyewear'}
         </span>
       </div>
 

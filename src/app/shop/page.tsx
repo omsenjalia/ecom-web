@@ -22,6 +22,9 @@ interface ShopPageProps {
 export default async function ShopPage({ searchParams }: ShopPageProps) {
   const params = await searchParams;
   const products = await getFilteredProducts(params);
+  
+  const supabase = await createClient();
+  const { data: categories } = await supabase.from('categories').select('slug, name').eq('is_active', true).order('display_order');
 
   return (
     <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 sm:py-12">
@@ -39,7 +42,7 @@ export default async function ShopPage({ searchParams }: ShopPageProps) {
           <div className="sticky top-28 space-y-6">
             <h2 className="text-sm font-bold uppercase tracking-wider text-charcoal">Filters</h2>
             <Suspense fallback={null}>
-              <ProductFilters />
+              <ProductFilters categories={categories} />
             </Suspense>
           </div>
         </aside>
@@ -47,7 +50,7 @@ export default async function ShopPage({ searchParams }: ShopPageProps) {
         {/* Mobile filters */}
         <div className="lg:hidden mb-6 overflow-x-auto pb-2">
           <Suspense fallback={null}>
-            <ProductFilters />
+            <ProductFilters categories={categories} />
           </Suspense>
         </div>
 
@@ -82,11 +85,11 @@ async function getFilteredProducts(params: {
     const supabase = await createClient();
     let query = supabase
       .from('products')
-      .select('*, images:product_images(*)')
+      .select('*, images:product_images(*), categories!inner(*)')
       .eq('is_active', true)
       .order('created_at', { ascending: false });
 
-    if (params.category) query = query.eq('category', params.category);
+    if (params.category) query = query.eq('categories.slug', params.category);
     if (params.gender) query = query.eq('gender', params.gender);
     if (params.shape) query = query.eq('frame_shape', params.shape);
     if (params.price) {
