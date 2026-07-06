@@ -16,12 +16,12 @@ export async function getCategories() {
 
   if (error) throw new Error(error.message);
 
-  return (data || []).map((cat: Record<string, unknown>) => ({
+  return (data || []).map((cat: any) => ({
     ...cat,
     product_count: Array.isArray(cat.products) && cat.products.length > 0
       ? (cat.products[0] as { count: number }).count
       : 0,
-  }));
+  })) as (import('@/lib/types').CategoryRecord & { product_count: number })[];
 }
 
 export async function createCategory(formData: {

@@ -298,7 +298,7 @@ export default function ProductsListClient({
                     <td className="admin-text-muted">{getCategoryName(product)}</td>
                     <td>
                       <span style={{ fontWeight: 600 }}>₹{(product.base_price as number).toLocaleString('en-IN')}</span>
-                      {product.mrp && (
+                      {(product.mrp as number) && (
                         <><br /><span className="admin-text-muted admin-text-sm" style={{ textDecoration: 'line-through' }}>₹{(product.mrp as number).toLocaleString('en-IN')}</span></>
                       )}
                     </td>

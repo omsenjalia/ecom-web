@@ -42,7 +42,7 @@ export default async function ShopPage({ searchParams }: ShopPageProps) {
           <div className="sticky top-28 space-y-6">
             <h2 className="text-sm font-bold uppercase tracking-wider text-charcoal">Filters</h2>
             <Suspense fallback={null}>
-              <ProductFilters categories={categories} />
+              <ProductFilters categories={categories || undefined} />
             </Suspense>
           </div>
         </aside>
@@ -50,7 +50,7 @@ export default async function ShopPage({ searchParams }: ShopPageProps) {
         {/* Mobile filters */}
         <div className="lg:hidden mb-6 overflow-x-auto pb-2">
           <Suspense fallback={null}>
-            <ProductFilters categories={categories} />
+            <ProductFilters categories={categories || undefined} />
           </Suspense>
         </div>
 
