@@ -39,10 +39,10 @@ export default async function ProductPage({ params }: ProductPageProps) {
         <a href="/shop" className="hover:text-charcoal transition-colors">Shop</a>
         <span className="mx-2">/</span>
         <a
-          href={`/shop/${product.category}`}
+          href={`/shop/${product.categories?.slug || product.category}`}
           className="hover:text-charcoal transition-colors capitalize"
         >
-          {product.category.replace('-', ' ')}
+          {product.categories?.name || product.category.replace('-', ' ')}
         </a>
         <span className="mx-2">/</span>
         <span className="text-charcoal">{product.name}</span>
@@ -64,7 +64,7 @@ async function getProduct(slug: string): Promise<
     const supabase = await createClient();
     const { data } = await supabase
       .from('products')
-      .select('*, variants:product_variants(*), images:product_images(*)')
+      .select('*, variants:product_variants(*), images:product_images(*), categories(*)')
       .eq('slug', slug)
       .eq('is_active', true)
       .single();

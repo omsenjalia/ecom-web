@@ -1,29 +1,43 @@
 // ─── Database types for Ram Chashma Ghar ───
 
-export type Category = 'eyeglasses' | 'sunglasses' | 'reading-glasses' | 'kids';
+export type CategorySlug = 'eyeglasses' | 'sunglasses' | 'reading-glasses' | 'kids' | string;
 export type Gender = 'men' | 'women' | 'unisex' | 'kids';
 export type FrameShape = 'round' | 'rectangular' | 'aviator' | 'cat-eye' | 'wayfarer' | 'square' | 'oval' | 'geometric';
 export type FrameMaterial = 'acetate' | 'metal' | 'titanium' | 'tr90' | 'wood' | 'mixed';
-export type OrderStatus = 'pending' | 'confirmed' | 'processing' | 'shipped' | 'delivered' | 'cancelled';
+export type OrderStatus = 'pending' | 'confirmed' | 'processing' | 'shipped' | 'delivered' | 'cancelled' | 'refunded';
 export type PaymentStatus = 'pending' | 'paid' | 'failed' | 'refunded';
 export type PaymentMethod = 'razorpay' | 'cod';
 export type DiscountType = 'percent' | 'flat';
+
+export interface CategoryRecord {
+  id: string;
+  name: string;
+  slug: string;
+  description: string;
+  display_order: number;
+  is_active: boolean;
+  created_at: string;
+  product_count?: number;
+}
 
 export interface Product {
   id: string;
   name: string;
   slug: string;
   description: string;
-  category: Category;
+  category: string; // kept for backward compat
+  category_id: string | null;
   gender: Gender;
   frame_shape: FrameShape;
   frame_material: FrameMaterial;
   base_price: number;
   mrp: number | null;
   is_active: boolean;
+  deleted_at: string | null;
   created_at: string;
   variants?: ProductVariant[];
   images?: ProductImage[];
+  categories?: CategoryRecord; // joined
 }
 
 export interface ProductVariant {
@@ -46,6 +60,7 @@ export interface ProductImage {
   alt_text: string;
   display_order: number;
   is_primary: boolean;
+  storage_path: string | null;
 }
 
 export interface CustomerProfile {
@@ -53,6 +68,7 @@ export interface CustomerProfile {
   user_id: string;
   full_name: string;
   phone: string;
+  is_admin: boolean;
   created_at: string;
 }
 
@@ -103,9 +119,11 @@ export interface Order {
   razorpay_payment_id: string | null;
   razorpay_signature: string | null;
   order_status: OrderStatus;
+  tracking_number: string | null;
   created_at: string;
   updated_at: string;
   items?: OrderItem[];
+  customer_profiles?: CustomerProfile;
 }
 
 export interface OrderItem {
@@ -130,6 +148,12 @@ export interface AddressSnapshot {
   pincode: string;
 }
 
+export interface SiteSetting {
+  key: string;
+  value: string;
+  updated_at: string;
+}
+
 // ─── Cart types (client-side) ───
 
 export interface CartItem {
@@ -151,10 +175,65 @@ export interface CartItem {
 // ─── Filter types ───
 
 export interface ProductFilters {
-  category?: Category;
+  category?: string;
   gender?: Gender;
   frame_shape?: FrameShape;
   price_min?: number;
   price_max?: number;
   search?: string;
+}
+
+// ─── Admin types ───
+
+export interface AdminProductListItem {
+  id: string;
+  name: string;
+  slug: string;
+  base_price: number;
+  mrp: number | null;
+  is_active: boolean;
+  deleted_at: string | null;
+  created_at: string;
+  category_id: string | null;
+  categories: CategoryRecord | null;
+  variants: { id: string; stock_quantity: number; sku: string }[];
+  images: { id: string; url: string; is_primary: boolean }[];
+}
+
+export interface AdminProductFormData {
+  id?: string;
+  name: string;
+  slug: string;
+  description: string;
+  category_id: string;
+  gender: Gender;
+  frame_shape: FrameShape;
+  frame_material: FrameMaterial;
+  base_price: number;
+  mrp: number | null;
+  is_active: boolean;
+  variants: AdminVariantFormData[];
+  images: AdminImageFormData[];
+}
+
+export interface AdminVariantFormData {
+  id?: string;
+  color_name: string;
+  color_hex: string;
+  size: string;
+  sku: string;
+  price_override: number | null;
+  stock_quantity: number;
+  is_active: boolean;
+}
+
+export interface AdminImageFormData {
+  id?: string;
+  url: string;
+  alt_text: string;
+  display_order: number;
+  is_primary: boolean;
+  storage_path: string | null;
+  variant_id: string | null;
+  file?: File; // for new uploads
 }

@@ -3,37 +3,6 @@ import Image from 'next/image';
 import { createClient } from '@/lib/supabase/server';
 import ProductCard from '@/components/ProductCard';
 
-const categories = [
-  {
-    name: 'Eyeglasses',
-    slug: 'eyeglasses',
-    description: 'Clear vision, bold style',
-    emoji: '👓',
-    image: 'https://images.unsplash.com/photo-1574258495973-f010dfbb5371?w=400&h=500&fit=crop',
-  },
-  {
-    name: 'Sunglasses',
-    slug: 'sunglasses',
-    description: 'UV protection meets fashion',
-    emoji: '🕶️',
-    image: 'https://images.unsplash.com/photo-1572635196237-14b3f281503f?w=400&h=500&fit=crop',
-  },
-  {
-    name: 'Reading Glasses',
-    slug: 'reading-glasses',
-    description: 'Comfort for every page',
-    emoji: '📖',
-    image: 'https://images.unsplash.com/photo-1591076482161-42ce6da69f67?w=400&h=500&fit=crop',
-  },
-  {
-    name: 'Kids',
-    slug: 'kids',
-    description: 'Tough frames, happy faces',
-    emoji: '🧒',
-    image: 'https://images.unsplash.com/photo-1510686015-cf8d5bfa2732?w=400&h=500&fit=crop',
-  },
-];
-
 const trustSignals = [
   { icon: '🚚', title: 'Free Shipping', desc: 'Orders above ₹999' },
   { icon: '💳', title: 'Cash on Delivery', desc: 'Pay when you receive' },
@@ -44,9 +13,28 @@ const trustSignals = [
 ];
 
 export default async function HomePage() {
+  const supabase = await createClient();
   let featuredProducts: Awaited<ReturnType<typeof getFeaturedProducts>> = [];
+  let categories: { id: string; name: string; slug: string; description: string; emoji: string; image: string }[] = [];
   try {
     featuredProducts = await getFeaturedProducts();
+    const { data: catData } = await supabase.from('categories').select('*').eq('is_active', true).order('display_order');
+    const CAT_IMAGES: Record<string, {emoji: string, image: string}> = {
+      'eyeglasses': { emoji: '👓', image: 'https://images.unsplash.com/photo-1574258495973-f010dfbb5371?w=400&h=500&fit=crop' },
+      'sunglasses': { emoji: '🕶️', image: 'https://images.unsplash.com/photo-1572635196237-14b3f281503f?w=400&h=500&fit=crop' },
+      'reading-glasses': { emoji: '📖', image: 'https://images.unsplash.com/photo-1591076482161-42ce6da69f67?w=400&h=500&fit=crop' },
+      'kids': { emoji: '🧒', image: 'https://images.unsplash.com/photo-1510686015-cf8d5bfa2732?w=400&h=500&fit=crop' },
+    };
+    if (catData) {
+      categories = catData.map(c => ({
+        id: c.id,
+        name: c.name,
+        slug: c.slug,
+        description: c.description || 'Premium eyewear',
+        emoji: CAT_IMAGES[c.slug]?.emoji || '✨',
+        image: CAT_IMAGES[c.slug]?.image || 'https://images.unsplash.com/photo-1574258495973-f010dfbb5371?w=400&h=500&fit=crop'
+      }));
+    }
   } catch {
     // Supabase not configured yet — show empty
   }
@@ -119,46 +107,48 @@ export default async function HomePage() {
       </section>
 
       {/* ─── CATEGORIES ─── */}
-      <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16 sm:py-24">
-        <div className="text-center mb-12">
-          <p className="text-amber text-sm uppercase tracking-[0.15em] font-semibold mb-2">Browse By Category</p>
-          <h2 className="text-3xl sm:text-4xl lg:text-5xl font-display text-charcoal">
-            Find Your Perfect Frame
-          </h2>
-        </div>
+      {categories.length > 0 && (
+        <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16 sm:py-24">
+          <div className="text-center mb-12">
+            <p className="text-amber text-sm uppercase tracking-[0.15em] font-semibold mb-2">Browse By Category</p>
+            <h2 className="text-3xl sm:text-4xl lg:text-5xl font-display text-charcoal">
+              Find Your Perfect Frame
+            </h2>
+          </div>
 
-        <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6">
-          {categories.map((cat) => (
-            <Link
-              key={cat.slug}
-              href={`/shop/${cat.slug}`}
-              className="group relative aspect-[3/4] sm:aspect-[3/4] overflow-hidden bg-charcoal"
-              id={`category-${cat.slug}`}
-            >
-              <Image
-                src={cat.image}
-                alt={cat.name}
-                fill
-                sizes="(max-width: 640px) 50vw, 25vw"
-                className="object-cover opacity-70 group-hover:opacity-50 group-hover:scale-105 transition-all duration-500"
-              />
-              <div className="absolute inset-0 bg-gradient-to-t from-charcoal/80 via-transparent to-transparent" />
-              <div className="absolute bottom-0 left-0 right-0 p-4 sm:p-6">
-                <span className="text-3xl mb-2 block">{cat.emoji}</span>
-                <h3 className="font-display text-xl sm:text-2xl text-cream">
-                  {cat.name}
-                </h3>
-                <p className="text-xs text-warm-gray-light mt-1 group-hover:text-cream transition-colors">
-                  {cat.description}
-                </p>
-                <span className="inline-block mt-3 text-xs text-amber font-semibold uppercase tracking-wider group-hover:translate-x-1 transition-transform">
-                  Shop Now →
-                </span>
-              </div>
-            </Link>
-          ))}
-        </div>
-      </section>
+          <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6">
+            {categories.map((cat) => (
+              <Link
+                key={cat.slug}
+                href={`/shop/${cat.slug}`}
+                className="group relative aspect-[3/4] sm:aspect-[3/4] overflow-hidden bg-charcoal"
+                id={`category-${cat.slug}`}
+              >
+                <Image
+                  src={cat.image}
+                  alt={cat.name}
+                  fill
+                  sizes="(max-width: 640px) 50vw, 25vw"
+                  className="object-cover opacity-70 group-hover:opacity-50 group-hover:scale-105 transition-all duration-500"
+                />
+                <div className="absolute inset-0 bg-gradient-to-t from-charcoal/80 via-transparent to-transparent" />
+                <div className="absolute bottom-0 left-0 right-0 p-4 sm:p-6">
+                  <span className="text-3xl mb-2 block">{cat.emoji}</span>
+                  <h3 className="font-display text-xl sm:text-2xl text-cream">
+                    {cat.name}
+                  </h3>
+                  <p className="text-xs text-warm-gray-light mt-1 group-hover:text-cream transition-colors">
+                    {cat.description}
+                  </p>
+                  <span className="inline-block mt-3 text-xs text-amber font-semibold uppercase tracking-wider group-hover:translate-x-1 transition-transform">
+                    Shop Now →
+                  </span>
+                </div>
+              </Link>
+            ))}
+          </div>
+        </section>
+      )}
 
       {/* ─── FEATURED PRODUCTS ─── */}
       {featuredProducts.length > 0 && (
@@ -290,7 +280,7 @@ async function getFeaturedProducts() {
   const supabase = await createClient();
   const { data } = await supabase
     .from('products')
-    .select('*, images:product_images(*)')
+    .select('*, images:product_images(*), categories(*)')
     .eq('is_active', true)
     .order('created_at', { ascending: false })
     .limit(8);

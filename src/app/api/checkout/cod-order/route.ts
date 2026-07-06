@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { createAdminClient } from '@/lib/supabase/admin';
+import { getAllSettings } from '@/app/admin/settings/actions';
 
 export async function POST(request: NextRequest) {
   try {
@@ -19,10 +20,15 @@ export async function POST(request: NextRequest) {
       subtotal += item.unit_price * item.quantity;
     }
 
+    const settings = await getAllSettings();
+    const threshold = parseFloat(settings['free_shipping_threshold'] || '999');
+    const shippingFee = parseFloat(settings['shipping_fee'] || '79');
+    const gstPercent = parseFloat(settings['gst_percent'] || '18');
+
     const discount = discount_amount || 0;
-    const shippingCost = subtotal >= 999 ? 0 : 79;
+    const shippingCost = subtotal >= threshold ? 0 : shippingFee;
     const total = subtotal - discount + shippingCost;
-    const gstAmount = Math.round((subtotal - discount) * 18 / 118 * 100) / 100;
+    const gstAmount = Math.round((subtotal - discount) * gstPercent / (100 + gstPercent) * 100) / 100;
 
     // Generate order number
     const orderNumber = `RCG-${Date.now().toString(36).toUpperCase()}-${Math.random().toString(36).substring(2, 5).toUpperCase()}`;

@@ -111,7 +111,7 @@ export default function ProductDetailClient({
       <div className="space-y-6">
         <div>
           <p className="text-xs text-warm-gray uppercase tracking-wider mb-1">
-            {product.category.replace('-', ' ')} · {product.gender}
+            {product.categories?.name || product.category?.replace('-', ' ')} · {product.gender}
           </p>
           <h1 className="text-3xl sm:text-4xl font-display text-charcoal">
             {product.name}
@@ -238,7 +238,7 @@ export default function ProductDetailClient({
               <dt className="text-warm-gray">Gender</dt>
               <dd className="text-charcoal capitalize">{product.gender}</dd>
               <dt className="text-warm-gray">Category</dt>
-              <dd className="text-charcoal capitalize">{product.category.replace('-', ' ')}</dd>
+              <dd className="text-charcoal capitalize">{product.categories?.name || product.category?.replace('-', ' ')}</dd>
             </dl>
           </div>
 
